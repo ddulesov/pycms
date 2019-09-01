@@ -1,7 +1,7 @@
 #include "module.h"
 #include <openssl/objects.h>
 
-static PyObject *cms_Verify(pycmsCMS *cms, PyObject *args,  PyObject *keywordArgs);
+static PyObject *_Verify(pycmsCMS *cms, PyObject *args,  PyObject *keywordArgs);
 static PyObject *getContent(pycmsCMS *cms, void *unused);
 static PyObject *getSignedTime(pycmsCMS *cms, void *unused);
 static PyObject *getSigners(pycmsCMS *cms, void *unused);
@@ -18,12 +18,12 @@ static void pycms_free(pycmsCMS *cms)
     Py_TYPE(cms)->tp_free((PyObject*) cms);
 }
 
-static PyMethodDef pycmsMethods[] = {
-    { "verify", (PyCFunction) cms_Verify, METH_VARARGS | METH_KEYWORDS },
+static PyMethodDef pycms_methods[] = {
+    { "verify", (PyCFunction) _Verify, METH_VARARGS | METH_KEYWORDS },
     { NULL }
 };
 
-static PyGetSetDef pycmsMembers[] = {
+static PyGetSetDef pycms_members[] = {
     { "content", (getter) getContent, 0, 0, 0 },
     { "signedtime", (getter) getSignedTime, 0, 0, 0 },
     { "signers", (getter) getSigners, 0, 0, 0 },
@@ -58,9 +58,9 @@ PyTypeObject pycmsPyTypeCMS = {
     0,                                  // tp_weaklistoffset
     0,                                  // tp_iter
     0,                                  // tp_iternext
-    pycmsMethods,                       // tp_methods
+    pycms_methods,                       // tp_methods
     0,                                  // tp_members
-    pycmsMembers,                       // tp_getset
+    pycms_members,                       // tp_getset
     0,                                  // tp_base
     0,                                  // tp_dict
     0,                                  // tp_descr_get
@@ -74,22 +74,6 @@ PyTypeObject pycmsPyTypeCMS = {
     0                                   // tp_bases
 };
 
-pycmsCMS *ossl_CMS_from_handle(CMS_ContentInfo* handle){
-    pycmsCMS *o = NULL;
-
-    CHECK(handle);
-
-    o = (pycmsCMS*) pycmsPyTypeCMS.tp_alloc(&pycmsPyTypeCMS, 0);
-    CHECK(o);
-
-    o->ptr = handle;
-    return o;
-err:
-    if(handle!=NULL){
-		CMS_ContentInfo_free(handle);
-    }
-    return NULL;
-}
 //returns content as bytes object 
 static PyObject *getContent(pycmsCMS *cms, void *unused){
     ASN1_OCTET_STRING **str= CMS_get0_content(cms->ptr);
@@ -143,7 +127,8 @@ static PyObject *getSigners(pycmsCMS *cms, void *unused){
         }
         PyList_SetItem(l, i, item);
     }
-    sk_X509_pop_free(x509, X509_free);
+
+    //sk_X509_pop_free(x509, X509_free);
     return l;
 
 err:
@@ -153,14 +138,14 @@ err:
     return NULL;
 }
 
-static PyObject *cms_Verify(pycmsCMS *cms, PyObject *args,  PyObject *keywordArgs){
+static PyObject *_Verify(pycmsCMS *cms, PyObject *args,  PyObject *keywordArgs){
     static char *keywordList[] = { "caStore", "notBefore", "notAfter", "content", NULL };
     BIO *cont = NULL;
     X509_STORE *st = NULL;
     int res = 0;
 
     PyObject *caStoreObj, *notBeforeObj, *notAfterObj;
-    char *content;
+    char *content=NULL;
     Py_ssize_t contentLength;
 
     time_t  tnotBefore, tnotAfter;
@@ -235,6 +220,7 @@ end:
     if(cont!=NULL){
         BIO_free(cont);
     }
+
     if(res==1)
         Py_RETURN_TRUE;
     else

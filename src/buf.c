@@ -1,16 +1,5 @@
-
-#include "common.h"
 /*
-static int mem_write(BIO *h, const char *buf, int num);
-static int mem_read(BIO *h, char *buf, int size);
-static int mem_puts(BIO *h, const char *str);
-static int mem_gets(BIO *h, char *str, int size);
-static long mem_ctrl(BIO *h, int cmd, long arg1, void *arg2);
-static int mem_new(BIO *h);
-static int secmem_new(BIO *h);
-static int mem_free(BIO *data);
-static int mem_buf_free(BIO *data);
-static int mem_buf_sync(BIO *h);
+#include "common.h"
 
 
 static const BIO_METHOD pybytes_method = {
@@ -30,66 +19,87 @@ static const BIO_METHOD pybytes_method = {
     NULL,                      
 };
 
-static int asn1_bio_new(BIO *b)
+static int pybytes_new(BIO *b)
 {
-    _PyBytesWriter *wrt = OPENSSL_zalloc(sizeof(*wrt));
-    _PyBytesWriter_Init(wrt); 
-
-    if (wrt == NULL)
+    Py_BIO_BUF *buf = OPENSSL_zalloc(sizeof(*buf));
+     
+    if (buf == NULL)
         return 0;
+    
+    printf("pybytes new\n");
 
-    BIO_set_data(b, wrt);
+    BIO_set_data(b, buf);
     BIO_set_init(b, 1);
 
     return 1;
 }
 
-static int asn1_bio_init(_PyBytesWriter *wrt, int size)
+static int pybytes_init(Py_BIO_BUF *buf, int size)
 {
-    void *s = _PyBytesWriter_Alloc(&wrt,size);
-    BIO_set_callback_arg(out, &wrt);
+    printf("pybytes init\n");
+    _PyBytesWriter_Init(&(buf->writer));
+    buf->ptr = _PyBytesWriter_Alloc(&(buf->writer),size);
     return 1;
 }
 
-static int asn1_bio_free(BIO *b)
+static int pybytes_free(BIO *b)
 {
-    BIO_ASN1_BUF_CTX *ctx;
-
+    Py_BIO_BUF *buf;
+    printf("pybytes free\n");
     if (b == NULL)
         return 0;
 
-    ctx = BIO_get_data(b);
-    if (ctx == NULL)
+    buf = BIO_get_data(b);
+    if (buf == NULL)
         return 0;
 
-    OPENSSL_free(ctx->buf);
-    OPENSSL_free(ctx);
+    _PyBytesWriter_Dealloc( &(buf->writer));
+    OPENSSL_free(buf);
     BIO_set_data(b, NULL);
     BIO_set_init(b, 0);
 
     return 1;
 }
 
-static int asn1_bio_write(BIO *b, const char *in, int inl)
+static int pybytes_write(BIO *b, const char *in, int inl)
 {
-    BIO_ASN1_BUF_CTX *ctx;
-    int wrmax, wrlen, ret;
-    unsigned char *p;
-    BIO *next;
+    Py_BIO_BUF *buf;
+    int  ret = -1;
 
-    ctx = BIO_get_data(b);
-  
+    printf("pybytes write %.*s\n", inl, in);
 
-    return (wrlen > 0) ? wrlen : ret;
+    buf = BIO_get_data(b);
+    if(buf==NULL){
+        return 0;
+    }
 
+    void *p = _PyBytesWriter_Prepare( &(buf->writer), buf->ptr, inl);
+    if(p==NULL){
+        return -1;
+    }
+    buf->ptr = p;
+
+    return inl;
 }
 
-static int asn1_bio_puts(BIO *b, const char *str)
+static int pybytes_puts(BIO *b, const char *str)
 {
-    return asn1_bio_write(b, str, strlen(str));
+    return pybytes_write(b, str, strlen(str));
 }
-static long asn1_bio_ctrl(BIO *b, int cmd, long arg1, void *arg2)
+
+static long pybytes_ctrl(BIO *b, int cmd, long arg1, void *arg2)
 {
+    Py_BIO_BUF *buf;
+    buf = BIO_get_data(b);
+
+    if (buf == NULL)
+        return 0;
+
+    if( cmd==BIO_CTRL_FLUSH){
+        printf("pybytes ctrl\n");
+        *(void **)arg2 = _PyBytesWriter_Finish(&(buf->writer), NULL );
+    }
+
     return 0;
 }
 */

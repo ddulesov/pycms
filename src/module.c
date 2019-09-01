@@ -79,7 +79,7 @@ PyObject *init_openssl(PyObject *self, PyObject *args){
     const char *conf;
     int sts=0;
 
-    if (!PyArg_ParseTuple(args, "s", &conf))
+    if (!PyArg_ParseTuple(args, "|s", &conf))
         return NULL;
     const char *ver = OpenSSL_version(OPENSSL_VERSION);
 

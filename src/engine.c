@@ -54,26 +54,3 @@ PyTypeObject pycmsPyTypeEngine = {
     0                                   // tp_bases
 };
 
-pycmsEngine *ossl_init_engine(const char* engine_id){
-    pycmsEngine *o = NULL;
-    ENGINE *eng = ENGINE_by_id(engine_id);
-    
-    if(eng==NULL){
-        return NULL;
-    }
-
-    CHECK(ENGINE_init(eng));
-	CHECK(ENGINE_set_default(eng, ENGINE_METHOD_ALL));
-
-    o = (pycmsEngine*) pycmsPyTypeEngine.tp_alloc(&pycmsPyTypeEngine, 0);
-    CHECK(o);
-    o->ptr = eng;
-
-    return o;
-err:
-    if(eng!=NULL){
-		ENGINE_finish(eng);
-		ENGINE_free(eng);
-    }
-    return NULL;
-}

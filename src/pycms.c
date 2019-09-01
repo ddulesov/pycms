@@ -8,7 +8,7 @@ static PyObject *ValidateError;
 PyObject *Empty;
 
 const char *_empty = "";
-#define PYCMSDOC  "pycms verify CMS signerinto message with GOST "
+#define PYCMSDOC  "pycms verify CMS signerinto message using openssl GOST engine"
 
 const char *PEM_TYPE_CMS = "CMS";
 const char *PEM_TYPE_CERT = "CERTIFICATE";
@@ -16,9 +16,6 @@ const char *PEM_TYPE_CRL = "CRL";
 const char *PEM_TYPE_PKEY = "PRIVATE KEY";
 
 ASN1_OBJECT *OidSigningTime;
-//OPENSSL_malloc
-//OPENSSL_realloc
-//OPENSSL_free
 
 PyObject *CMS_from_file(PyObject *self, PyObject *args);
 PyObject *x509_from_file(PyObject *self, PyObject *args);
@@ -40,13 +37,12 @@ time_t getDateTimeStamp(PyObject *datetime){
     if(datetime!=NULL){
         // YY[0-1] mm[2] dd[3] HH[4] MM[5] SS[6] mS[7-9] 
         dt = (PyDateTime_DateTime*)(datetime); 
-        /*
-        for (int i = 0; i < _PyDateTime_DATETIME_DATASIZE; i++)
+        
+        /* for (int i = 0; i < _PyDateTime_DATETIME_DATASIZE; i++)
         {
             printf("%02i ", dt->data[i] );
         }
-        printf("\n");
-        */
+        printf("\n"); */
         t.tm_hour = dt->data[4];
         t.tm_min = dt->data[5];
         t.tm_sec = dt->data[6];
@@ -54,13 +50,12 @@ time_t getDateTimeStamp(PyObject *datetime){
         t.tm_mon = dt->data[2]-1;
 
         t.tm_year = ((dt->data[0]<<8) | dt->data[1] ) - 1900;
-
         return mktime(&t);
     }
     return (time_t)0;
 }
 
-static PyMethodDef PyCMSMethods[] = {
+static PyMethodDef pycms_methods[] = {
     { "init",  init_openssl, METH_VARARGS, "Init openssl." },
     //{ "pem2der", pem2der, METH_VARARGS, "pem decode." },
     { "x509_from_file", x509_from_file, METH_VARARGS, "load x509 certificate from file." },
@@ -69,13 +64,13 @@ static PyMethodDef PyCMSMethods[] = {
     { NULL, NULL, 0, NULL }        /* Sentinel */
 };
 
-static struct PyModuleDef pycmsmodule = {
+static struct PyModuleDef pycms_module = {
     PyModuleDef_HEAD_INIT,
     "_pycms",   /* name of module */
     PYCMSDOC, /* module documentation, may be NULL */
     -1,       /* size of per-interpreter state of the module,
                  or -1 if the module keeps state in global variables. */
-    PyCMSMethods
+    pycms_methods
 };
 
 PyMODINIT_FUNC PyInit__pycms(void){
@@ -83,7 +78,7 @@ PyMODINIT_FUNC PyInit__pycms(void){
     //PyMem_SetupDebugHooks();
     OidSigningTime = OBJ_nid2obj(NID_pkcs9_signingTime);
     
-    m = PyModule_Create(&pycmsmodule);
+    m = PyModule_Create(&pycms_module);
     if (m == NULL)
         return NULL;
     //initialize DateTime CAPI

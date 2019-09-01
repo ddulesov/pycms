@@ -6,7 +6,15 @@ module1 = Extension('_pycms',
                     include_dirs = ['C:/Program Files/OpenSSL-Win64/include'],
                     libraries = ['libcrypto64MD'],
                     library_dirs = ['C:/Program Files/OpenSSL-Win64/lib/VC'],
-                    sources = ['src/pycms.c','src/ossl.c','src/engine.c', 'src/cms.c', 'src/x509.c', 'src/x509name.c', 'src/module.c' ])
+                    sources = ['src/pycms.c',
+                     'src/ossl.c',
+                     'src/engine.c', 
+                     'src/cms.c', 
+                     'src/x509.c', 
+                     'src/x509store.c',
+                     'src/x509name.c',
+                     'src/module.c' 
+                     ])
 
                                        	
 setup (name = 'PyCMS',

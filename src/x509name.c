@@ -12,7 +12,7 @@ static void pycms_free(pycmsX509Name *name)
     Py_TYPE(name)->tp_free((PyObject*) name);
 }
 
-static PyGetSetDef pycmsMembers[] = {
+static PyGetSetDef pycms_members[] = {
     //{ "commonName", (getter) getCommonName, 0, 0, 0 },
     { NULL }
 };
@@ -63,7 +63,7 @@ PyTypeObject pycmsPyTypeX509Name = {
     0,                                  // tp_iternext
     0,                                  // tp_methods
     0,                                  // tp_members
-    pycmsMembers,                       // tp_getset
+    pycms_members,                       // tp_getset
     0,                                  // tp_base
     0,                                  // tp_dict
     0,                                  // tp_descr_get
@@ -77,21 +77,6 @@ PyTypeObject pycmsPyTypeX509Name = {
     0                                   // tp_bases
 };
 
-pycmsX509Name *ossl_X509Name_from_handle(X509_NAME* handle){
-    pycmsX509Name *o = NULL;
-    printf("X509Name");
-    CHECK(handle);
 
-    o = (pycmsX509Name*) pycmsPyTypeX509Name.tp_alloc(&pycmsPyTypeX509Name, 0);
-    CHECK(o);
-    
-    o->ptr = handle;
-    return o;
-err:
-    if(handle!=NULL){
-		X509_NAME_free(handle);
-    }
-    return NULL;
-}
 
 
