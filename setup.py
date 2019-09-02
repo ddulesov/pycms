@@ -35,7 +35,7 @@ def genDirs():
                      yield k
 
 
-if sys.platform=='linux':
+if sys.platform in ('linux', 'linux2'):
        libraries.append("crypto")
 else:
        compiler = get_default_compiler()

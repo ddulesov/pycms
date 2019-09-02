@@ -23,12 +23,14 @@ static PyObject *getSerialNumber(pycmsX509 *x509, void *unused){
     return _PyLong_FromByteArray( serial->data, serial->length, 0, 0);
 }
 //incomplete implementation
+/*
 static PyObject *getPubKey(pycmsX509 *x509, void *unused){
-    //EVP_PKEY *key = X509_get_pubkey(x509->ptr);
-    //X509_PUBKEY *key= X509_get_X509_PUBKEY(x509->ptr);
+    EVP_PKEY *key = X509_get_pubkey(x509->ptr);
+    X509_PUBKEY *key= X509_get_X509_PUBKEY(x509->ptr);
 
     return NULL;
 }
+*/
 
 static PyObject *getSubject(pycmsX509 *x509, void *unused){
     X509_NAME *handle = X509_get_subject_name(x509->ptr);

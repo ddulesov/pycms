@@ -1,5 +1,8 @@
 #include "module.h"
 
+PyObject* raiseOsslError(void);
+PyObject* raiseError(PyObject *ErrType, const char *message);
+
 PyObject *CMS_from_file(PyObject *self, PyObject *args){
     CMS_ContentInfo *cms = NULL;
     const char *filename;
@@ -90,7 +93,7 @@ PyObject *init_openssl(PyObject *self, PyObject *args){
     Py_RETURN_NONE;
 }
 
-PyObject *raiseOsslError(){
+PyObject* raiseOsslError(void){
     //pycmsError *error;
     //error = pycmsError_newFromOpenSSL();
     unsigned long e = ERR_peek_last_error();
@@ -102,7 +105,7 @@ PyObject *raiseOsslError(){
     return NULL;
 }
 
-PyObject *raiseError(PyObject *ErrType, const char *message){
+PyObject* raiseError(PyObject *ErrType, const char *message){
     PyErr_SetString(ErrType, message);
     return NULL;
 }

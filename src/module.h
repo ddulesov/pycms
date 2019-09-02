@@ -4,12 +4,12 @@
 #define CHECK( e )      if(!(e)){ goto err; }
 
 PyObject *raiseError(PyObject *ErrType, const char *message);
-PyObject *raiseOsslError();
+PyObject *raiseOsslError(void);
 
-extern const char *PEM_TYPE_CMS;
-extern const char *PEM_TYPE_CERT;
-extern const char *PEM_TYPE_CRL;
-extern const char *PEM_TYPE_PKEY;
+extern const char PEM_TYPE_CMS[];
+extern const char PEM_TYPE_CERT[];
+extern const char PEM_TYPE_CRL[];
+extern const char PEM_TYPE_PKEY[];
 
 typedef struct pycmsBuffer pycmsBuffer;
 typedef struct pycmsError pycmsError;

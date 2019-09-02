@@ -76,10 +76,14 @@ static struct PyModuleDef pycms_module = {
                  or -1 if the module keeps state in global variables. */
     pycms_methods
 };
+#define  INIT_FUNCTION_NAME     PyInit__pycms( void )
+#else
+
+#define  INIT_FUNCTION_NAME	init_pycms( void )
 
 #endif
 
-PyMODINIT_FUNC PyInit__pycms(void){
+PyMODINIT_FUNC INIT_FUNCTION_NAME{
     PyObject *m;
     //PyMem_SetupDebugHooks();
     OidSigningTime = OBJ_nid2obj(NID_pkcs9_signingTime);
@@ -89,13 +93,12 @@ PyMODINIT_FUNC PyInit__pycms(void){
 #else
     m = Py_InitModule(PROJECT_NAME, pycms_methods);
 #endif
-    if (m == NULL)
-        return NULL;
+    if (m == NULL){ RET_MODULE; }
 
     //initialize DateTime CAPI
     PyDateTime_IMPORT;
     if(PyDateTimeAPI==NULL){
-        return NULL;
+        RET_MODULE;
     }
 
     Empty = PyBytes_FromStringAndSize(_empty, 0 );
@@ -112,5 +115,8 @@ PyMODINIT_FUNC PyInit__pycms(void){
 
     PYCMS_ADD_TYPE_OBJECT("X509Store", &pycmsPyTypeX509Store);
     PYCMS_ADD_TYPE_OBJECT("X509", &pycmsPyTypeX509);
+
+#if PY_MAJOR_VERSION > 2    
     return m;	
+#endif
 }
