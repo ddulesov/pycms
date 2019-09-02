@@ -93,6 +93,6 @@ module_ex = Extension('_pycms',
 
                                        	
 setup (name = 'PyCMS',
-       version = '0.1.0',
+       version = '0.1.4',
        description = 'verify Cryptographic Message Syntax SignerInfo with GOST cryptography support',
        ext_modules = [module_ex])

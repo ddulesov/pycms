@@ -19,9 +19,9 @@ addons:
     update: true
 
 script:
-  - git describe --long
+  - git describe --tags
   - python3 setup.py build
-  - python3 setup.py install
+  - sudo python3 setup.py install
   - python3 pycms_test.py
 
 
