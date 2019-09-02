@@ -19,7 +19,7 @@ python CMS library with gost cryptography validation support
 - only PEM encoding CMS and certificate supported 
 - only SignedData  type CMS validation realized
 - python 2.7 not supported 
-- (see [TODO.md](//./TODO.md)
+- (see [TODO.md](TODO.md)
 
 ## Requirements
 - python >3.6

@@ -8,8 +8,8 @@ include_dirs = []
 library_dirs = []
 libraries = []
 
-if sys.version_info.major!=3:
-	raise "require Python 3.6 at least"
+#if sys.version_info.major!=3:
+#	raise "require Python 3.6 at least"
 
 def isOpenSSLDir( p ):
        ossl = os.path.join( p, 'openssl.exe')

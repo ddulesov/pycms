@@ -6,13 +6,16 @@
 //static PyObject *ValidateError;
 PyObject *Empty;
 
-const char *_empty = "";
-#define PYCMSDOC  "pycms verify CMS signerinto message using openssl GOST engine"
+const char PROJECT_NAME[] = "_pycms";
 
-const char *PEM_TYPE_CMS = "CMS";
-const char *PEM_TYPE_CERT = "CERTIFICATE";
-const char *PEM_TYPE_CRL = "CRL";
-const char *PEM_TYPE_PKEY = "PRIVATE KEY";
+const char _empty[] = "";
+
+const char PYCMSDOC[] = "pycms verify CMS signerinto message using openssl GOST engine";
+
+const char PEM_TYPE_CMS[] = "CMS";
+const char PEM_TYPE_CERT[] = "CERTIFICATE";
+const char PEM_TYPE_CRL[] = "CRL";
+const char PEM_TYPE_PKEY[] = "PRIVATE KEY";
 
 ASN1_OBJECT *OidSigningTime;
 
@@ -62,21 +65,30 @@ static PyMethodDef pycms_methods[] = {
     { NULL, NULL, 0, NULL }        /* Sentinel */
 };
 
+
+#if PY_MAJOR_VERSION > 2
+
 static struct PyModuleDef pycms_module = {
     PyModuleDef_HEAD_INIT,
-    "_pycms",   /* name of module */
+    PROJECT_NAME,   /* name of module */
     PYCMSDOC, /* module documentation, may be NULL */
     -1,       /* size of per-interpreter state of the module,
                  or -1 if the module keeps state in global variables. */
     pycms_methods
 };
 
+#endif
+
 PyMODINIT_FUNC PyInit__pycms(void){
     PyObject *m;
     //PyMem_SetupDebugHooks();
     OidSigningTime = OBJ_nid2obj(NID_pkcs9_signingTime);
     
+#if PY_MAJOR_VERSION > 2    
     m = PyModule_Create(&pycms_module);
+#else
+    m = Py_InitModule(PROJECT_NAME, pycms_methods);
+#endif
     if (m == NULL)
         return NULL;
 
@@ -87,7 +99,6 @@ PyMODINIT_FUNC PyInit__pycms(void){
     }
 
     Empty = PyBytes_FromStringAndSize(_empty, 0 );
-
 
     //Exception Types
     PYCMS_ADD_TYPE_OBJECT("FormatError",  PyErr_NewException("pycms.format.error", NULL, NULL) );

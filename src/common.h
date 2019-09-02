@@ -45,10 +45,10 @@ extern PyObject *Empty;
     if (PyType_Ready(type) < 0) \
         return NULL;
 
-
+/*
 typedef struct Py_BIO_BUF {
     void            *ptr;
     _PyBytesWriter  writer;
 }Py_BIO_BUF;
-
+*/
 #endif
