@@ -1,6 +1,7 @@
 #include "common.h"
 #include "module.h"
 
+//load openssl dynamic module
 pycmsEngine *ossl_init_engine(const char* engine_id){
     pycmsEngine *o = NULL;
     ENGINE *eng = ENGINE_by_id(engine_id);

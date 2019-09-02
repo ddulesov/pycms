@@ -81,6 +81,7 @@ PyMODINIT_FUNC PyInit__pycms(void){
     m = PyModule_Create(&pycms_module);
     if (m == NULL)
         return NULL;
+
     //initialize DateTime CAPI
     PyDateTime_IMPORT;
     if(PyDateTimeAPI==NULL){

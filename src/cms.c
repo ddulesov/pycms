@@ -158,9 +158,6 @@ static PyObject *_Verify(pycmsCMS *cms, PyObject *args,  PyObject *keywordArgs){
     if (!PyArg_ParseTupleAndKeywords(args, keywordArgs, "|OOOs#",
             keywordList, &caStoreObj, &notBeforeObj, &notAfterObj, &content, &contentLength))
         return NULL;
-
-    //printf("%p ", PyDateTimeAPI);
-    //printf("res %s %i %i", content, Py_TYPE(notBeforeObj), PyDateTime_CheckExact(notBeforeObj)  ); ///PyDateTime_CheckExact(notBeforeObj)
     
     tnotBefore = (time_t)(0);
     tnotAfter =  (time_t)( MAX_TIME_T );
@@ -181,7 +178,7 @@ static PyObject *_Verify(pycmsCMS *cms, PyObject *args,  PyObject *keywordArgs){
     
     //verify content if supplied
     if( content!=NULL ){
-        cont = BIO_new_mem_buf(content, contentLength);
+        cont = BIO_new_mem_buf(content, (int)contentLength);
     }
 
     //verify signing time

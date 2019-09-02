@@ -1,4 +1,5 @@
 setlocal
+@echo off
 set ACTION=%1
 set ARG=%2
 
@@ -7,24 +8,37 @@ if "%ACTION%"=="run"  (
 	goto:run 
 )
 if "%ACTION%"=="test"  (
-	set ARG="-i" 
 	goto:test 
 )
 
-del _pycms.pyd
+if "%ACTION%"=="dist"  (
+	goto:dist 
+)
 
-c:\Python37\python.exe setup.py  build
+
+rem del _pycms.pyd
+
+python.exe setup.py  build
 IF ERRORLEVEL 1 GOTO:eof
   
-copy build\lib.win-amd64-3.7\_pycms.cp37-win_amd64.pyd _pycms.pyd
+rem copy build\lib.win-amd64-3.7\_pycms.cp37-win_amd64.pyd _pycms.pyd
 
-goto:run
+if "%ACTION%"=="build"   goto:eof 
+
+call:run
+
 
 
 :test
-c:\Python37\python.exe -m pycms_test
+python.exe -m pycms_test
 goto:eof
 
 :run
-c:\Python37\python.exe %ARG% -m pycms
+python.exe %ARG% -m pycms
+goto:eof
+
+:dist
+python.exe setup.py  build
+python.exe setup.py  install
+
 goto:eof

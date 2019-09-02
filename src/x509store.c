@@ -93,7 +93,6 @@ static PyObject *_Load(pycmsX509Store *x509s, PyObject *args,  PyObject *keyword
     static char *keywordList[] = { "file", "path", NULL };
     const char *file, *path;
 
-    Py_ssize_t fileLen, pathLen;
     file=NULL;
     path=NULL;
     
@@ -101,12 +100,11 @@ static PyObject *_Load(pycmsX509Store *x509s, PyObject *args,  PyObject *keyword
         return NULL;
     }
 
-    printf("store load...");
+    
 
     if (!PyArg_ParseTupleAndKeywords(args, keywordArgs, "|ss",
             keywordList, &file, &path)){
-        printf("parse error");
-        
+
         return NULL;
     }
     /*
@@ -114,7 +112,6 @@ static PyObject *_Load(pycmsX509Store *x509s, PyObject *args,  PyObject *keyword
         return raiseError(PyExc_RuntimeError, "require 'dir' or 'file' parameters ");
     }
     */
-    printf("store file=%s dir=%s\n", file, path);
 
     if( X509_STORE_load_locations(x509s->ptr, file, path) < 1 ){
         return raiseOsslError();
@@ -129,8 +126,6 @@ static PyMethodDef pycms_methods[] = {
     { "load", (PyCFunction) _Load, METH_VARARGS | METH_KEYWORDS  },
     { NULL }
 };
-
-
 
 PyTypeObject pycmsPyTypeX509Store = {
     PyVarObject_HEAD_INIT(NULL, 0)
