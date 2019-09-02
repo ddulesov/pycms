@@ -1,3 +1,4 @@
 - [x] setup.py build automation script for Windows platform
 - [ ] memory leak detection
-- [ ] CI/CD for Windows platform
+- [ ] CI/CD script for Windows platform
+- [ ] python 2.7 version

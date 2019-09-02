@@ -19,15 +19,13 @@ matrix:
   - python: "3.6"
   - python: "3.7"
 
-
 addons:
   apt:
     update: true
 
 script:
   - git describe --tags
-  - python setup.py build
-  - python setup.py install
+  - python setup.py build install
   - python pycms_test.py
 
 

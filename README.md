@@ -1,9 +1,11 @@
 # pycms
 python CMS library with gost cryptography validation support
-[![Build Status](https://travis-ci.com/ddulesov/pycms.svg?branch=master)](https://travis-ci.com/ddulesov/pycms)
-*pre-alpha* release. 
+## *pre-alpha* version.
 
-## Futures
+[![Build Status](https://travis-ci.com/ddulesov/pycms.svg?branch=master)](https://travis-ci.com/ddulesov/pycms)
+ 
+
+## Features
 - dynamic linking with system openssl lib
 - small footprint. _pycms is thin wrapper over openssl libcrypto library that use Python C-API 
 - Windows , Linux , OSx supported
@@ -16,6 +18,8 @@ python CMS library with gost cryptography validation support
 ## Issues
 - only PEM encoding CMS and certificate supported 
 - only SignedData  type CMS validation realized
+- python 2.7 not supported 
+- (see [TODO.md](//./TODO.md)
 
 ## Requirements
 - python >3.6
