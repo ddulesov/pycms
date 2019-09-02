@@ -4,8 +4,7 @@ PyObject *CMS_from_file(PyObject *self, PyObject *args){
     CMS_ContentInfo *cms = NULL;
     const char *filename;
     BIO  *pem_bio = NULL;
-    X509 *cacert = NULL;
-
+    
     if (!PyArg_ParseTuple(args, "s", &filename))
         return NULL;
 
@@ -33,7 +32,7 @@ PyObject *CMS_from_file(PyObject *self, PyObject *args){
 PyObject *x509_from_file(PyObject *self, PyObject *args){
     const char *filename;
     BIO  *pem_bio = NULL;
-    X509 *cacert = NULL;
+    X509 *cacert=NULL;
 
     if (!PyArg_ParseTuple(args, "s", &filename))
         return NULL;
@@ -77,7 +76,6 @@ PyObject *engine_by_id(PyObject *self, PyObject *args){
 
 PyObject *init_openssl(PyObject *self, PyObject *args){
     const char *conf;
-    int sts=0;
 
     if (!PyArg_ParseTuple(args, "|s", &conf))
         return NULL;

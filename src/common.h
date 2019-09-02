@@ -1,7 +1,8 @@
 #ifndef _COMMON_H
 #define _COMMON_H
 
-#include <python.h>
+#include <Python.h>
+#include <limits.h>
 #include <openssl/ossl_typ.h>
 #include <openssl/evp.h>
 #include <openssl/engine.h>
@@ -17,7 +18,11 @@ time_t getDateTimeStamp(PyObject *datetime);
 PyObject* fromTimeStruct(struct tm *t);
 
 
-#define MAX_TIME_T          0x793406fffi64
+#ifdef TIME_MAX
+#define MAX_TIME_T          TIME_MAX
+#else
+#define MAX_TIME_T          0x793406fff
+#endif
 extern PyObject *Empty;
 
 #define PY_RETURN_EMPTY  return Py_INCREF( Empty), Empty 

@@ -82,7 +82,7 @@ static PyObject *getContent(pycmsCMS *cms, void *unused){
     if(!(*str))
         PY_RETURN_EMPTY;
 
-    PY_RETURN_BUF((*str)->data, (*str)->length );    
+    PY_RETURN_BUF((const char*)(*str)->data, (*str)->length );    
     //return PyBytes_FromStringAndSize((*str)->data, (*str)->length);
 }
 

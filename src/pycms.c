@@ -2,9 +2,8 @@
 #include "module.h"
 #include <datetime.h>
 
-static PyObject *FormatError;
-static PyObject *ValidateError;
-
+//static PyObject *FormatError;
+//static PyObject *ValidateError;
 PyObject *Empty;
 
 const char *_empty = "";
@@ -89,6 +88,7 @@ PyMODINIT_FUNC PyInit__pycms(void){
     }
 
     Empty = PyBytes_FromStringAndSize(_empty, 0 );
+
 
     //Exception Types
     PYCMS_ADD_TYPE_OBJECT("FormatError",  PyErr_NewException("pycms.format.error", NULL, NULL) );
