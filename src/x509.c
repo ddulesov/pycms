@@ -25,21 +25,19 @@ static PyObject *getSerialNumber(pycmsX509 *x509, void *unused){
 //incomplete implementation
 static PyObject *getPubKey(pycmsX509 *x509, void *unused){
     //EVP_PKEY *key = X509_get_pubkey(x509->ptr);
-    X509_PUBKEY *key= X509_get_X509_PUBKEY(x509->ptr);
+    //X509_PUBKEY *key= X509_get_X509_PUBKEY(x509->ptr);
 
     return NULL;
 }
 
 static PyObject *getSubject(pycmsX509 *x509, void *unused){
     X509_NAME *handle = X509_get_subject_name(x509->ptr);
-    //return ossl_X509Name_from_handle(  handle);
     return X509_NAME_REPR( handle );        
 }
 
 static PyObject *getIssuer(pycmsX509 *x509, void *unused){
     X509_NAME *handle = X509_get_issuer_name(x509->ptr);
-    return X509_NAME_REPR( handle );
-    //return ossl_X509Name_from_handle(handle);        
+    return X509_NAME_REPR( handle );       
 }
 
 static PyObject *getNotBefore(pycmsX509 *x509, void *unused){
@@ -64,14 +62,7 @@ static PyObject *pycms_repr(pycmsX509 *x509)
     if(x509->ptr == NULL)
         return NULL;
 
-    //_PyBytesWriter  wrt;
-    //_PyBytesWriter_Init(&wrt);    
-
-    //s = _PyBytesWriter_Alloc(&wrt,4096);
     out= BIO_new(BIO_s_mem());
-    
-    //BIO_set_callback_arg(out, &wrt);
-    //BIO_set_callback(out, BIO_Buff_callback);
     
     X509_print(out, x509->ptr);
     
@@ -83,7 +74,6 @@ static PyObject *pycms_repr(pycmsX509 *x509)
     BIO_free(out);
 
     return o;
-    //return _PyBytesWriter_Finish(&wrt, s);
 }
 
 static PyGetSetDef pycms_members[] = {

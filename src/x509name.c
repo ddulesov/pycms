@@ -8,7 +8,6 @@ static void pycms_free(pycmsX509Name *name)
         //X509_NAME_free(name->ptr);
         name->ptr = NULL;
     }
-    printf("pycms_free");
     Py_TYPE(name)->tp_free((PyObject*) name);
 }
 

@@ -1,0 +1,3 @@
+- [x] setup.py build automation script for Windows platform
+- [ ] memory leak detection
+- [ ] CI/CD for Windows platform

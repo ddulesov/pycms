@@ -107,14 +107,3 @@ PyObject *raiseError(PyObject *ErrType, const char *message){
     return NULL;
 }
 
-PyObject *pem2der(PyObject *self, PyObject *args){
-    const char *buf;
-    Py_ssize_t  buf_len;
-    if (!PyArg_ParseTuple(args, "s#", &buf, &buf_len))
-        return NULL;
-
-    PyObject *o=Py_BuildValue("s", "some return values");
-    //Py_ssize_t refcnt = Py_REFCNT(o);
-    //printf("ref cnt = %lli", refcnt);
-    return o;
-}

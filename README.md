@@ -8,7 +8,7 @@ python CMS library with gost cryptography validation support
 - small footprint. _pycms is thin wrapper over openssl libcrypto library that use Python C-API 
 - Windows , Linux , OSx supported
 - openssl 1.1.x compatible
-- can use openssl extensions module via engine api [gost](http://wiki.rosalab.ru/ru/index.php/OpenSSL_%D0%B8_%D0%93%D0%9E%D0%A1%D0%A2)
+- can use openssl extensions module via engine api [gost (34.11-94, 34.10-2001, 34.10-2012)](http://wiki.rosalab.ru/ru/index.php/OpenSSL_%D0%B8_%D0%93%D0%9E%D0%A1%D0%A2)
 - validate CMS using build-in openssl cryptograpy 
 - validate CMS SignedData signing time , content, signers certificates using  provided ca storage. 
 - support openssl hashed local issued  [ certificates storage (CA)](https://www.openssl.org/docs/man1.1.0/man1/rehash.html)
@@ -23,7 +23,7 @@ python CMS library with gost cryptography validation support
 - openssl gost engine (optiona)
 
 ## Building and Installation
-```sh
+```console
 sudo apt-get install openssl libengine-gost-openssl1.1 python3 python3-dev  libssl-dev
 git clone --depth 1  https://github.com/ddulesov/pycms.git
 

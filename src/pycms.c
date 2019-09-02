@@ -56,7 +56,6 @@ time_t getDateTimeStamp(PyObject *datetime){
 
 static PyMethodDef pycms_methods[] = {
     { "init",  init_openssl, METH_VARARGS, "Init openssl." },
-    //{ "pem2der", pem2der, METH_VARARGS, "pem decode." },
     { "x509_from_file", x509_from_file, METH_VARARGS, "load x509 certificate from file." },
     { "CMS_from_file", CMS_from_file, METH_VARARGS, "load CMS  from file." },
     { "engine_by_id", engine_by_id, METH_VARARGS, "open dso engine." },
