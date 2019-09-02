@@ -1,6 +1,6 @@
 # pycms
 python CMS library with gost cryptography validation support
-
+[![Build Status](https://travis-ci.com/ddulesov/pycms.svg?branch=master)](https://travis-ci.com/ddulesov/pycms)
 *pre-alpha* release. 
 
 ## Futures
