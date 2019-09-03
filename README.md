@@ -43,18 +43,17 @@ import sys
 
 #initialize openssl and gost engine
 _pycms.init() 
-e = _pycms.engine_by_id("gost")
+e = _pycms.engine("gost")
 
 store = _pycms.X509Store()
 
 #single CA
-#ca = _pycms.x509_from_file("./tests/caef9f6a.0")
+#ca = _pycms.X509.load("./tests/caef9f6a.0")
 #store.add(ca)
 
 #configure local issued CA certificate store
 store.load(path="./tests/")
-
-cms = _pycms.CMS_from_file("./tests/cms.pem")
+cms = _pycms.CMS.load("./tests/cms.pem")
 
 #validation process
 res = cms.verify(caStore=store, content=b'test string\x0A', 

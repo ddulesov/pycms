@@ -2,37 +2,39 @@
 #include "module.h"
 #include <datetime.h>
 
-//static PyObject *FormatError;
-//static PyObject *ValidateError;
+PyObject *VerifyError;
+PyObject *OpenSSLError;
 PyObject *Empty;
 
 const char PROJECT_NAME[] = "_pycms";
-
 const char _empty[] = "";
 
 const char PYCMSDOC[] = "pycms verify CMS signerinto message using openssl GOST engine";
 
+/*
 const char PEM_TYPE_CMS[] = "CMS";
 const char PEM_TYPE_CERT[] = "CERTIFICATE";
 const char PEM_TYPE_CRL[] = "CRL";
 const char PEM_TYPE_PKEY[] = "PRIVATE KEY";
-
+*/
 ASN1_OBJECT *OidSigningTime;
 
 PyObject *CMS_from_file(PyObject *self, PyObject *args);
 PyObject *x509_from_file(PyObject *self, PyObject *args);
-PyObject *engine_by_id(PyObject *self, PyObject *args);
-PyObject *init_openssl(PyObject *self, PyObject *args);
+PyObject *_engine(PyObject *self, PyObject *args);
+PyObject *_init_openssl(PyObject *self, PyObject *args);
 
+// is obj P
 int isDateTime(PyObject* obj){
     if(obj==NULL) return 0;
     return PyDateTime_CheckExact(obj);
 }
-
+// convert struct tm to PY::datetime object
 PyObject* fromTimeStruct(struct tm *t){
     return PyDateTime_FromDateAndTime(t->tm_year+1900, t->tm_mon+1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec, 0);
 }
 
+// convert PY::datetime object to time_t
 time_t getDateTimeStamp(PyObject *datetime){
     struct tm   t= {0};
     PyDateTime_DateTime *dt;
@@ -56,18 +58,14 @@ time_t getDateTimeStamp(PyObject *datetime){
     }
     return (time_t)0;
 }
-
+// module own method definitions
 static PyMethodDef pycms_methods[] = {
-    { "init",  init_openssl, METH_VARARGS, "Init openssl." },
-    { "x509_from_file", x509_from_file, METH_VARARGS, "load x509 certificate from file." },
-    { "CMS_from_file", CMS_from_file, METH_VARARGS, "load CMS  from file." },
-    { "engine_by_id", engine_by_id, METH_VARARGS, "open dso engine." },
+    { "init",  _init_openssl, METH_VARARGS, "Init openssl." },
+    { "engine", _engine, METH_VARARGS, "open dso engine." },
     { NULL, NULL, 0, NULL }        /* Sentinel */
 };
 
-
 #if PY_MAJOR_VERSION > 2
-
 static struct PyModuleDef pycms_module = {
     PyModuleDef_HEAD_INIT,
     PROJECT_NAME,   /* name of module */
@@ -76,11 +74,9 @@ static struct PyModuleDef pycms_module = {
                  or -1 if the module keeps state in global variables. */
     pycms_methods
 };
-#define  INIT_FUNCTION_NAME     PyInit__pycms( void )
+#define  INIT_FUNCTION_NAME PyInit__pycms( void )
 #else
-
 #define  INIT_FUNCTION_NAME	init_pycms( void )
-
 #endif
 
 PyMODINIT_FUNC INIT_FUNCTION_NAME{
@@ -104,17 +100,21 @@ PyMODINIT_FUNC INIT_FUNCTION_NAME{
     Empty = PyBytes_FromStringAndSize(_empty, 0 );
 
     //Exception Types
-    PYCMS_ADD_TYPE_OBJECT("FormatError",  PyErr_NewException("pycms.format.error", NULL, NULL) );
-    PYCMS_ADD_TYPE_OBJECT("ValidateError",  PyErr_NewException("pycms.validate.error", NULL, NULL) );
+    VerifyError = PyErr_NewException("pycms.verify.error", NULL, NULL);
+    OpenSSLError = PyErr_NewException("pycms.openssl.error", NULL, NULL);
+    PYCMS_ADD_TYPE_OBJECT("VerifyError",  VerifyError );
+    PYCMS_ADD_TYPE_OBJECT("OpenSSLError",  OpenSSLError );
+
     //OpenSSL Types
     PYCMS_MAKE_TYPE_READY(&pycmsPyTypeEngine);
     PYCMS_MAKE_TYPE_READY(&pycmsPyTypeX509);
     PYCMS_MAKE_TYPE_READY(&pycmsPyTypeX509Name);
     PYCMS_MAKE_TYPE_READY(&pycmsPyTypeX509Store);
     PYCMS_MAKE_TYPE_READY(&pycmsPyTypeCMS);
-
+    //OpenSSL module Types
     PYCMS_ADD_TYPE_OBJECT("X509Store", &pycmsPyTypeX509Store);
     PYCMS_ADD_TYPE_OBJECT("X509", &pycmsPyTypeX509);
+    PYCMS_ADD_TYPE_OBJECT("CMS", &pycmsPyTypeCMS);
 
 #if PY_MAJOR_VERSION > 2    
     return m;	

@@ -2,6 +2,7 @@
 #include <openssl/objects.h>
 
 static PyObject *_Verify(pycmsCMS *cms, PyObject *args,  PyObject *keywordArgs);
+static PyObject *_Load(PyObject *_null, PyObject *args);
 static PyObject *getContent(pycmsCMS *cms, void *unused);
 static PyObject *getSignedTime(pycmsCMS *cms, void *unused);
 static PyObject *getSigners(pycmsCMS *cms, void *unused);
@@ -19,7 +20,8 @@ static void pycms_free(pycmsCMS *cms)
 }
 
 static PyMethodDef pycms_methods[] = {
-    { "verify", (PyCFunction) _Verify, METH_VARARGS | METH_KEYWORDS },
+    { "load", (PyCFunction) _Load, METH_VARARGS | METH_STATIC , "load CMS from file in PEM format" },
+    { "verify", (PyCFunction) _Verify, METH_VARARGS | METH_KEYWORDS , "verify CMS signedData"},
     { NULL }
 };
 
@@ -74,6 +76,30 @@ PyTypeObject pycmsPyTypeCMS = {
     0                                   // tp_bases
 };
 
+static PyObject *_Load(PyObject *_null, PyObject *args){
+    CMS_ContentInfo *cms = NULL;
+    const char *filename;
+    BIO  *pem_bio = NULL;
+    
+    if (!PyArg_ParseTuple(args, "s", &filename))
+        return NULL;
+
+    pem_bio = BIO_new_file(filename, "r");
+    if( pem_bio == NULL ){
+        return raiseOsslError();
+    }
+
+    cms = PEM_read_bio_CMS(pem_bio, NULL, 0, NULL);
+    
+    BIO_free(pem_bio);
+    pem_bio = NULL;
+
+    if (cms==NULL){
+        return raiseOsslError();
+    } 
+
+    return (PyObject*)ossl_CMS_from_handle( cms );
+}
 //returns content as bytes object 
 static PyObject *getContent(pycmsCMS *cms, void *unused){
     ASN1_OCTET_STRING **str= CMS_get0_content(cms->ptr);
@@ -152,7 +178,7 @@ static PyObject *_Verify(pycmsCMS *cms, PyObject *args,  PyObject *keywordArgs){
     caStoreObj = notBeforeObj = notAfterObj = NULL;
 
     if(cms==NULL || cms->ptr == NULL ){
-        return raiseError(PyExc_RuntimeError, "uninitialized cms");
+        return raiseError(VerifyError, "uninitialized cms");
     }
 
     if (!PyArg_ParseTupleAndKeywords(args, keywordArgs, "|OOOs#",
@@ -164,14 +190,14 @@ static PyObject *_Verify(pycmsCMS *cms, PyObject *args,  PyObject *keywordArgs){
 
     if( notBeforeObj!=NULL) {
         if( !isDateTime(notBeforeObj) )
-            return raiseError(PyExc_RuntimeError, "notBefore parameter is not datetime");
+            return raiseError(VerifyError, "notBefore parameter is not datetime");
         tnotBefore = getDateTimeStamp( notBeforeObj );
         //Py_DECREF(notBeforeObj);
     }
 
     if( notAfterObj!=NULL ){
         if( !isDateTime(notAfterObj) )
-            return raiseError(PyExc_RuntimeError, "notAfter parameter is not datetime");
+            return raiseError(VerifyError, "notAfter parameter is not datetime");
         tnotAfter = getDateTimeStamp( notAfterObj );
         //Py_DECREF( notAfterObj );
     }
@@ -204,7 +230,7 @@ static PyObject *_Verify(pycmsCMS *cms, PyObject *args,  PyObject *keywordArgs){
     //get local issued certificates
     if( caStoreObj!=NULL ){
         if(Py_TYPE(caStoreObj) !=  &pycmsPyTypeX509Store ){
-            return raiseError(PyExc_RuntimeError, "caStore parameter is not X509Store object");
+            return raiseError(VerifyError, "caStore parameter is not X509Store object");
         }
         st = ((pycmsX509Store *)caStoreObj)->ptr;
     }

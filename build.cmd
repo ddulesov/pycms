@@ -15,7 +15,6 @@ if "%ACTION%"=="dist"  (
 	goto:dist 
 )
 
-
 rem del _pycms.pyd
 
 python.exe setup.py  build
@@ -27,14 +26,12 @@ if "%ACTION%"=="build"   goto:eof
 
 call:run
 
-
-
 :test
 python.exe -m pycms_test
 goto:eof
 
 :run
-python.exe %ARG% -m pycms
+python.exe %ARG% -m pycms_run
 goto:eof
 
 :dist

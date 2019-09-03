@@ -7,20 +7,27 @@ DEF_CONTENT = b'test string\n'
 class TestModuleMethods(unittest.TestCase):
     def setUp(self):
         self.version = _pycms.init()
-        self.e = _pycms.engine_by_id("gost")
+        self.e = _pycms.engine("gost")
 
     def test_module(self):
         print( self.version )
 
         self.assertTrue(isinstance(self.version,str))
         self.assertTrue( self.version.startswith("OpenSSL"))
-
         self.assertIsNotNone(self.e)
+
+    def test_exceptions(self):
+        self.assertRaises(_pycms.OpenSSLError, _pycms.X509.load, "" )
+        self.assertRaises(_pycms.OpenSSLError, _pycms.X509.load, "./tests/cms.pem" )
+        
+        with self.assertRaises(_pycms.VerifyError) as cm:
+            cms = _pycms.CMS.load( './tests/cms.pem' )
+            cms.verify( notBefore=None, notAfter="2019.08.10" )
 
     def test_ca(self):
         path = './tests/a7debd4e.0'
 
-        ca = _pycms.x509_from_file(path)
+        ca = _pycms.X509.load(path)
         self.assertTrue( isinstance(ca, _pycms.X509) )
 
         v = ca.serialNumber
@@ -38,7 +45,7 @@ class TestModuleMethods(unittest.TestCase):
         del ca
         path = './tests/caef9f6a.0'
 
-        ca = _pycms.x509_from_file(path)
+        ca = _pycms.X509.load(path)
         v= ca.subject
 
         self.assertEqual(v, '/CN=localhost/OU=gost2012_512' )
@@ -49,22 +56,44 @@ class TestModuleMethods(unittest.TestCase):
 
         self.assertIsNotNone( store )
         path = './tests/caef9f6a.0'
-        ca = _pycms.x509_from_file(path)
+        ca = _pycms.X509.load(path)
 
         store.add( ca )
         del ca
         del store
 
+    def test_monkey(self):
+        path = './tests/caef9f6a.0' 
+        ca = _pycms.X509.load(path)
+        store = _pycms.X509Store()
+        store.add( ca )
+        del ca
+
+        path = './tests/cms.pem'
+        cms = _pycms.CMS.load( path )
+        signers = None
+
+        for i in range(1000):
+            del signers
+            signers = cms.signers
+
+            for signer in signers:
+                store.verify( signer )
+
+            cms.verify(caStore=store, content=DEF_CONTENT )
+
+
     def test_cms_1(self):
         store = _pycms.X509Store()
 
         path = './tests/caef9f6a.0'  
-        ca = _pycms.x509_from_file(path)
+        ca = _pycms.X509.load(path)
 
         store.add( ca )
+        del ca
 
         path = './tests/cms.pem'
-        cms = _pycms.CMS_from_file( path )
+        cms = _pycms.CMS.load( path )
 
         signer = cms.signers[0]
 
@@ -124,12 +153,12 @@ class TestModuleMethods(unittest.TestCase):
     def test_cms_2(self):
         store = _pycms.X509Store()
         path = './tests/caef9f6a.0'  
-        ca = _pycms.x509_from_file(path)
+        ca = _pycms.X509.load(path)
 
         store.add( ca )
 
         path = './tests/cms_2001.pem'
-        cms = _pycms.CMS_from_file( path )
+        cms = _pycms.CMS.load( path )
 
         signer = cms.signers[0]
 
@@ -139,9 +168,7 @@ class TestModuleMethods(unittest.TestCase):
         ) )
 
         self.assertFalse( cms.verify(caStore=store , content=DEF_CONTENT) )
-
         self.assertFalse( cms.verify(caStore=store ) )
-
         self.assertFalse( store.verify( signer ) )
 
     def test_cms_3(self):
@@ -149,7 +176,7 @@ class TestModuleMethods(unittest.TestCase):
         store.load(path="./tests/")
 
         path = './tests/cms.pem'
-        cms = _pycms.CMS_from_file( path )
+        cms = _pycms.CMS.load( path )
 
         self.assertTrue( cms.verify(caStore=store , content=DEF_CONTENT, 
             notBefore = datetime.datetime( 2019, 8, 12, 10, 59, 50),
@@ -157,7 +184,7 @@ class TestModuleMethods(unittest.TestCase):
         ) )
 
         path = './tests/cms_rsa.pem'
-        cms = _pycms.CMS_from_file( path )
+        cms = _pycms.CMS.load( path )
 
         self.assertTrue( cms.verify(caStore=store , content=DEF_CONTENT, 
             notBefore = datetime.datetime( 2019, 8, 12, 10, 59, 50),
@@ -165,7 +192,7 @@ class TestModuleMethods(unittest.TestCase):
         ) )
 
         path = './tests/cms_2001.pem'
-        cms = _pycms.CMS_from_file( path )
+        cms = _pycms.CMS.load( path )
 
         self.assertTrue( cms.verify(caStore=store , content=DEF_CONTENT, 
             notBefore = datetime.datetime( 2019, 8, 12, 10, 59, 50),

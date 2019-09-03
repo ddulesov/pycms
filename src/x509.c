@@ -4,6 +4,8 @@
 pycmsX509Name *ossl_X509Name_from_handle(X509_NAME* handle);
 PyObject *X509_NAME_REPR(X509_NAME* ptr);
 
+static PyObject *_Load(PyObject *_null, PyObject *args);
+
 static void pycms_free(pycmsX509 *x509)
 {
     if (x509->ptr) {
@@ -87,6 +89,13 @@ static PyGetSetDef pycms_members[] = {
     { NULL }
 };
 
+
+
+static PyMethodDef pycms_methods[] = {
+    { "load", (PyCFunction) _Load, METH_VARARGS | METH_STATIC ,"load certificate from file in PEM format" },
+    { NULL }
+};
+
 PyTypeObject pycmsPyTypeX509 = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "pycms.X509",                       // tp_name
@@ -115,7 +124,7 @@ PyTypeObject pycmsPyTypeX509 = {
     0,                                  // tp_weaklistoffset
     0,                                  // tp_iter
     0,                                  // tp_iternext
-    0,                                  // tp_methods
+    pycms_methods,                      // tp_methods
     0,                                  // tp_members
     pycms_members,                      // tp_getset
     0,                                  // tp_base
@@ -131,6 +140,29 @@ PyTypeObject pycmsPyTypeX509 = {
     0                                   // tp_bases
 };
 
+static PyObject *_Load(PyObject *_null, PyObject *args){
+    const char *filename;
+    BIO  *pem_bio = NULL;
+    X509 *cacert=NULL;
+
+    if (!PyArg_ParseTuple(args, "s", &filename))
+        return NULL;
+
+    pem_bio = BIO_new_file(filename, "r");
+    if( pem_bio == NULL ){
+        return raiseOsslError();
+    }
+
+    cacert = PEM_read_bio_X509(pem_bio, NULL, 0, NULL);
+    BIO_free(pem_bio);
+    pem_bio = NULL;
+
+    if (cacert==NULL){
+        return raiseOsslError();
+    } 
+     
+    return (PyObject*) ossl_X509_from_handle( cacert ); 
+}
 
 
 

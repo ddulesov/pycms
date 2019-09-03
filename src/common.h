@@ -23,7 +23,10 @@ PyObject* fromTimeStruct(struct tm *t);
 #else
 #define MAX_TIME_T          0x793406fff
 #endif
+
 extern PyObject *Empty;
+extern PyObject *VerifyError;
+extern PyObject *OpenSSLError;
 
 #define PY_RETURN_EMPTY  return Py_INCREF( Empty), Empty 
 

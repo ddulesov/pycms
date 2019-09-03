@@ -33,7 +33,7 @@ static PyObject *_Add(pycmsX509Store *x509s, PyObject *args){
         return NULL;
 
     if(x509Obj==NULL ||  Py_TYPE(x509Obj)!= &pycmsPyTypeX509){
-        return raiseError(PyExc_RuntimeError, "not a X509 object");
+        return raiseError(VerifyError, "not a X509 object");
     }
     CHECK( X509_STORE_add_cert(x509s->ptr, ((pycmsX509 *)x509Obj)->ptr) );
 
@@ -55,7 +55,7 @@ static PyObject *_Verify(pycmsX509Store *x509s, PyObject *args){
         return NULL;
 
     if(x509Obj==NULL ||  Py_TYPE(x509Obj)!= &pycmsPyTypeX509){
-        return raiseError(PyExc_RuntimeError, "not a X509 object");
+        return raiseError(VerifyError, "not a X509 object");
     }
     x = ((pycmsX509 *)x509Obj)->ptr;
     if(x==NULL)
@@ -99,8 +99,6 @@ static PyObject *_Load(pycmsX509Store *x509s, PyObject *args,  PyObject *keyword
     if (x509s==NULL){
         return NULL;
     }
-
-    
 
     if (!PyArg_ParseTupleAndKeywords(args, keywordArgs, "|ss",
             keywordList, &file, &path)){
@@ -170,3 +168,5 @@ PyTypeObject pycmsPyTypeX509Store = {
     0,                                  // tp_is_gc
     0                                   // tp_bases
 };
+
+
