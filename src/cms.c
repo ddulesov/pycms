@@ -78,7 +78,7 @@ PyTypeObject pycmsPyTypeCMS = {
 
 static PyObject *_Load(PyObject *_null, PyObject *args){
     CMS_ContentInfo *cms = NULL;
-    const char *filename;
+    const char *filename=NULL;
     BIO  *pem_bio = NULL;
     
     if (!PyArg_ParseTuple(args, "s", &filename))

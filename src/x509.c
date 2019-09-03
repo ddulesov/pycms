@@ -141,7 +141,7 @@ PyTypeObject pycmsPyTypeX509 = {
 };
 
 static PyObject *_Load(PyObject *_null, PyObject *args){
-    const char *filename;
+    const char *filename=NULL;
     BIO  *pem_bio = NULL;
     X509 *cacert=NULL;
 
