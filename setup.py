@@ -98,6 +98,7 @@ module_ex = Extension('_pycms',
                      'src/ossl.c',
                      'src/engine.c', 
                      'src/cms.c', 
+                     'src/evp.c',
                      'src/x509.c', 
                      'src/x509store.c',
                      'src/x509name.c',
@@ -106,6 +107,6 @@ module_ex = Extension('_pycms',
 
                                        	
 setup (name = 'PyCMS',
-       version = '1.0',
+       version = '1.1',
        description = 'verify Cryptographic Message Syntax SignerInfo with GOST cryptography support',
        ext_modules = [module_ex])

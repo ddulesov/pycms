@@ -1,4 +1,3 @@
-#include "common.h"
 #include "module.h"
 
 pycmsX509Name *ossl_X509Name_from_handle(X509_NAME* handle);
@@ -48,14 +47,14 @@ static PyObject *getNotBefore(pycmsX509 *x509, void *unused){
     struct tm t;
     const ASN1_TIME *time=X509_get0_notBefore(x509->ptr);
     ASN1_TIME_to_tm(time, &t);
-    return fromTimeStruct(&t);  
+    return DateTime_from_tm(&t);  
 }
 
 static PyObject *getNotAfter(pycmsX509 *x509, void *unused){
     struct tm t;
     const ASN1_TIME *time=X509_get0_notAfter(x509->ptr);
     ASN1_TIME_to_tm(time, &t);
-    return fromTimeStruct(&t);     
+    return DateTime_from_tm(&t);     
 }
 
 static PyObject *pycms_repr(pycmsX509 *x509)

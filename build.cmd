@@ -35,7 +35,7 @@ python.exe %ARG% -m pycms_run
 goto:eof
 
 :dist
-python.exe setup.py  build
-python.exe setup.py  install
+python.exe setup.py  build  install
+
 
 goto:eof

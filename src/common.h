@@ -14,8 +14,9 @@
 PyObject *raiseError(PyObject *ErrType, const char *message);
 //datetime CAPI functions
 int isDateTime(PyObject* obj);
-time_t getDateTimeStamp(PyObject *datetime);
-PyObject* fromTimeStruct(struct tm *t);
+int DateTime_to_tm(PyObject *datetime, struct tm *t);
+//time_t getDateTimeStamp(PyObject *datetime);
+PyObject* DateTime_from_tm(struct tm *t);
 
 
 #ifdef TIME_MAX

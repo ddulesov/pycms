@@ -74,3 +74,18 @@ err:
     }
     return NULL;
 }
+
+
+pycmsEVP *ossl_EVP_from_handle(EVP_PKEY *handle){
+    CHECK(handle);
+
+    pycmsEVP* o = (pycmsEVP*) pycmsPyTypeEVP.tp_alloc(&pycmsPyTypeEVP, 0);
+    CHECK(o);
+    o->ptr = handle;
+    return o;
+err:
+    if(handle!=NULL){
+		EVP_PKEY_free(handle);
+    }
+    return NULL;
+}

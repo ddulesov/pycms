@@ -2,3 +2,5 @@
 - [ ] memory leak detection
 - [ ] CI/CD script for Windows platform
 - [x] python 2.7 version
+- [ ] module cleanup acording to [PEP-3121](https://www.python.org/dev/peps/pep-3121/)
+- [ ] new BIO_METHOD over _PyBytesWriter that will replace *write_bio_* methods

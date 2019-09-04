@@ -1,47 +1,32 @@
 #include "module.h"
 
-static void pycms_free(pycmsX509Name *name)
+static PyObject *_Load(PyObject *_null, PyObject *args);
+
+static void pycms_free(pycmsEVP *evp)
 {
-    if (name->ptr) {
-        //Use X509_NAME_dup( x ) in ossl_X509Name_from_handle
-        //X509_NAME_free(name->ptr);
-        name->ptr = NULL;
+    if (evp->ptr) {
+		EVP_PKEY_free(evp->ptr);
+        evp->ptr = NULL;
     }
-    Py_TYPE(name)->tp_free((PyObject*) name);
+    Py_TYPE(evp)->tp_free((PyObject*) evp);
 }
 
-static PyGetSetDef pycms_members[] = {
-    //{ "commonName", (getter) getCommonName, 0, 0, 0 },
+static PyMethodDef pycms_methods[] = {
+    { "load", (PyCFunction) _Load, METH_VARARGS | METH_STATIC , "load private key  from file in PEM format" },
     { NULL }
 };
 
-PyObject *X509_NAME_REPR(X509_NAME* ptr){
-    char buf[512];
-    char *str = X509_NAME_oneline(ptr, buf, sizeof(buf));
-    
-    if(str==NULL){
-        return NULL;
-    }
-
-    PyObject *o = PyUnicode_FromString(buf);
-    return o;
-}
-
-static PyObject *pycms_repr(pycmsX509Name *name){
-    return X509_NAME_REPR(name->ptr);
-}
-
-PyTypeObject pycmsPyTypeX509Name = {
+PyTypeObject pycmsPyTypeEVP = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    "pycms.X509Name",                     // tp_name
-    sizeof(pycmsX509Name),                // tp_basicsize
+    "pycms.EVP",                        // tp_name
+    sizeof(pycmsEVP),                   // tp_basicsize
     0,                                  // tp_itemsize
     (destructor) pycms_free,            // tp_dealloc
     0,                                  // tp_print
     0,                                  // tp_getattr
     0,                                  // tp_setattr
     0,                                  // tp_compare
-    (reprfunc) pycms_repr,               // tp_repr
+    0,                                  // tp_repr
     0,                                  // tp_as_number
     0,                                  // tp_as_sequence
     0,                                  // tp_as_mapping
@@ -59,9 +44,9 @@ PyTypeObject pycmsPyTypeX509Name = {
     0,                                  // tp_weaklistoffset
     0,                                  // tp_iter
     0,                                  // tp_iternext
-    0,                                  // tp_methods
+    pycms_methods,                       // tp_methods
     0,                                  // tp_members
-    pycms_members,                       // tp_getset
+    0,                                  // tp_getset
     0,                                  // tp_base
     0,                                  // tp_dict
     0,                                  // tp_descr_get
@@ -75,6 +60,53 @@ PyTypeObject pycmsPyTypeX509Name = {
     0                                   // tp_bases
 };
 
+struct  pwd {
+    const char *password;
+    int passwordLen;
+};
+
+int wrap_password_callback(char *buf, int bufsiz, int verify, void *userdata)
+{
+
+    struct pwd *p = (struct pwd *) userdata;
+    if(p==NULL || p->password == NULL || p->passwordLen==0 || p->passwordLen > bufsiz)
+        return -1;
+    
+    memmove(buf, p->password, p->passwordLen + 1);
+    return p->passwordLen;
+}
 
 
 
+static PyObject *_Load(PyObject *_null, PyObject *args){
+    const char *filename=NULL;
+    struct pwd   password;
+    BIO  *pem_bio = NULL;
+    EVP_PKEY *evp=NULL;
+
+    password.passwordLen = 0 ;
+
+    if (!PyArg_ParseTuple(args, "s|s#", &filename, &(password.password) , &(password.passwordLen) ))
+        return NULL;
+
+    pem_bio = BIO_new_file(filename, "r");
+    if( pem_bio == NULL ){
+        return raiseOsslError();
+    }
+
+    //asn1 format
+    //pkey = d2i_PrivateKey_bio(pem_bio, NULL);
+    //pkcs12
+    //if (!load_pkcs12(pem_bio, key_descrip, wrap_password_callback, &cb_data,
+    //                     &pkey, NULL, NULL))
+        
+    evp = PEM_read_bio_PrivateKey(pem_bio, NULL, wrap_password_callback, (void*)&password );
+    BIO_free(pem_bio);
+    pem_bio = NULL;
+
+    if (evp==NULL){
+        return raiseOsslError();
+    } 
+     
+    return (PyObject*) ossl_EVP_from_handle( evp ); 
+}

@@ -1,5 +1,6 @@
 import unittest
 import datetime
+from datetime import timedelta, timezone
 import _pycms
 
 DEF_CONTENT = b'test string\n'
@@ -37,10 +38,10 @@ class TestModuleMethods(unittest.TestCase):
         self.assertEqual(v, '/CN=localhost/OU=gost2001')
 
         v = ca.notBefore
-        self.assertEqual(v, datetime.datetime(2019, 8, 23, 16, 9, 41) )
+        self.assertEqual(v, datetime.datetime(2019, 8, 23, 16, 9, 41, tzinfo=timezone.utc) )
 
         v = ca.notAfter
-        self.assertEqual(v, datetime.datetime(2029, 8, 20, 16, 9, 41) )
+        self.assertEqual(v, datetime.datetime(2029, 8, 20, 16, 9, 41, tzinfo=timezone.utc) )
 
         del ca
         path = './tests/caef9f6a.0'
@@ -73,7 +74,7 @@ class TestModuleMethods(unittest.TestCase):
         cms = _pycms.CMS.load( path )
         signers = None
 
-        for i in range(1000):
+        for i in range(100):
             del signers
             signers = cms.signers
 
@@ -101,10 +102,10 @@ class TestModuleMethods(unittest.TestCase):
         self.assertEqual( signer.subject, '/C=RU/ST=Moscow/L=Moscow/O=Global Security/OU=IT Department/CN=dmitry.dulesov@gmail.com' )
         self.assertEqual( signer.issuer, '/CN=localhost/OU=gost2012_512' )
 
-        self.assertEqual( signer.notAfter, datetime.datetime(2020, 8, 22, 16, 9, 41) )
+        self.assertEqual( signer.notAfter, datetime.datetime(2020, 8, 22, 16, 9, 41, tzinfo=timezone.utc) )
         self.assertEqual( cms.content, DEF_CONTENT )
 
-        self.assertEqual( cms.signedtime[0] , datetime.datetime(2019, 8, 23, 16, 9, 41) )
+        self.assertEqual( cms.signedtime[0] , datetime.datetime(2019, 8, 23, 16, 9, 41, tzinfo=timezone.utc) )
 
         v = store.verify( signer )
         self.assertTrue( v )
@@ -116,26 +117,26 @@ class TestModuleMethods(unittest.TestCase):
         self.assertTrue( v )
 
         v = cms.verify(caStore=store , content=DEF_CONTENT, 
-            notBefore = datetime.datetime( 2019, 8, 12, 10, 59, 50),
-            notAfter = datetime.datetime( 2019, 8, 23, 23, 40, 10)
+            notBefore = datetime.datetime( 2019, 8, 12, 10, 59, 50, tzinfo=timezone.utc),
+            notAfter = datetime.datetime( 2019, 8, 23, 23, 40, 10, tzinfo=timezone.utc)
         )
         self.assertTrue( v )
 
         v = cms.verify(caStore=store , content=b'other content', 
-            notBefore = datetime.datetime( 2019, 8, 12, 10, 59, 50),
-            notAfter = datetime.datetime( 2019, 8, 23, 23, 40, 10)
+            notBefore = datetime.datetime( 2019, 8, 12, 10, 59, 50, tzinfo=timezone.utc),
+            notAfter = datetime.datetime( 2019, 8, 23, 23, 40, 10, tzinfo=timezone.utc)
         )
         self.assertFalse( v )       
 
         v = cms.verify(caStore=store , content=DEF_CONTENT, 
-            notBefore = datetime.datetime( 2019, 8, 12, 10, 59, 50),
-            notAfter = datetime.datetime( 2019, 8, 23, 16, 00, 00)
+            notBefore = datetime.datetime( 2019, 8, 12, 10, 59, 50, tzinfo=timezone.utc),
+            notAfter = datetime.datetime( 2019, 8, 23, 16, 00, 00, tzinfo=timezone.utc)
         )
         
         self.assertFalse( v )
 
         v = cms.verify(caStore=store , content=DEF_CONTENT, 
-            notBefore = datetime.datetime( 2019, 8, 12, 10, 59, 50)
+            notBefore = datetime.datetime( 2019, 8, 12, 10, 59, 50, tzinfo=timezone.utc)
         )
         
         self.assertTrue( v )
@@ -144,8 +145,8 @@ class TestModuleMethods(unittest.TestCase):
         store = _pycms.X509Store()
 
         v = cms.verify(caStore=store , content=DEF_CONTENT, 
-            notBefore = datetime.datetime( 2019, 8, 12, 10, 59, 50),
-            notAfter = datetime.datetime( 2019, 8, 23, 23, 40, 10)
+            notBefore = datetime.datetime( 2019, 8, 12, 10, 59, 50, tzinfo=timezone.utc),
+            notAfter = datetime.datetime( 2019, 8, 23, 23, 40, 10, tzinfo=timezone.utc)
         )
 
         self.assertFalse( v )
@@ -163,8 +164,8 @@ class TestModuleMethods(unittest.TestCase):
         signer = cms.signers[0]
 
         self.assertFalse( cms.verify(caStore=store , content=DEF_CONTENT, 
-            notBefore = datetime.datetime( 2019, 8, 12, 10, 59, 50),
-            notAfter = datetime.datetime( 2019, 8, 23, 23, 40, 10)
+            notBefore = datetime.datetime( 2019, 8, 12, 10, 59, 50, tzinfo=timezone.utc),
+            notAfter = datetime.datetime( 2019, 8, 23, 23, 40, 10, tzinfo=timezone.utc)
         ) )
 
         self.assertFalse( cms.verify(caStore=store , content=DEF_CONTENT) )
@@ -179,27 +180,53 @@ class TestModuleMethods(unittest.TestCase):
         cms = _pycms.CMS.load( path )
 
         self.assertTrue( cms.verify(caStore=store , content=DEF_CONTENT, 
-            notBefore = datetime.datetime( 2019, 8, 12, 10, 59, 50),
-            notAfter = datetime.datetime( 2019, 8, 23, 23, 40, 10)
+            notBefore = datetime.datetime( 2019, 8, 12, 10, 59, 50, tzinfo=timezone.utc),
+            notAfter = datetime.datetime( 2019, 8, 23, 23, 40, 10, tzinfo=timezone.utc)
         ) )
 
         path = './tests/cms_rsa.pem'
         cms = _pycms.CMS.load( path )
 
         self.assertTrue( cms.verify(caStore=store , content=DEF_CONTENT, 
-            notBefore = datetime.datetime( 2019, 8, 12, 10, 59, 50),
-            notAfter = datetime.datetime( 2019, 8, 23, 23, 40, 10)
+            notBefore = datetime.datetime( 2019, 8, 12, 10, 59, 50, tzinfo=timezone.utc),
+            notAfter = datetime.datetime( 2019, 8, 23, 23, 40, 10, tzinfo=timezone.utc)
         ) )
 
         path = './tests/cms_2001.pem'
         cms = _pycms.CMS.load( path )
 
         self.assertTrue( cms.verify(caStore=store , content=DEF_CONTENT, 
-            notBefore = datetime.datetime( 2019, 8, 12, 10, 59, 50),
-            notAfter = datetime.datetime( 2019, 8, 23, 23, 40, 10)
+            notBefore = datetime.datetime( 2019, 8, 12, 10, 59, 50, tzinfo=timezone.utc),
+            notAfter = datetime.datetime( 2019, 8, 23, 23, 40, 10, tzinfo=timezone.utc)
         ) )     
 
+    def test_sign(self):
+        key = _pycms.EVP.load("./tests/key1.pem", b"123456")
+        #self-signed certificate
+        cert = _pycms.X509.load("./tests/cert1.pem")
 
+        notBefore = datetime.datetime.utcnow().replace(tzinfo = timezone.utc) - timedelta(seconds=1)
+
+        cms = _pycms.CMS.sign(pkey=key, signer=cert, content=b'123456789')
+
+        self.assertTrue( cms.pem.startswith(b"-----BEGIN CMS-----") )
+        self.assertEqual( b'123456789', cms.content )
+
+        notAfter = datetime.datetime.utcnow().replace(tzinfo = timezone.utc) + timedelta(seconds= 1)
+        signingTime = cms.signedtime[0]
+
+        #print("not Before", notBefore)
+
+        self.assertTrue( signingTime>=notBefore )
+        self.assertTrue( signingTime<=notAfter )
+
+        store = _pycms.X509Store()
+        store.add( cert )
+
+        #print("python notAfter timestamp ", notAfter.timestamp() )
+        #print("python notBefore timestamp ", notBefore.timestamp() )
+
+        self.assertTrue( cms.verify(caStore=store, content=b'123456789', notAfter=notAfter, notBefore=notBefore) )
 
 
 if __name__ == '__main__':

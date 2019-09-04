@@ -2,10 +2,12 @@
 #include <openssl/objects.h>
 
 static PyObject *_Verify(pycmsCMS *cms, PyObject *args,  PyObject *keywordArgs);
+static PyObject *_Sign(PyObject *_null, PyObject *args,  PyObject *keywordArgs);
 static PyObject *_Load(PyObject *_null, PyObject *args);
 static PyObject *getContent(pycmsCMS *cms, void *unused);
 static PyObject *getSignedTime(pycmsCMS *cms, void *unused);
 static PyObject *getSigners(pycmsCMS *cms, void *unused);
+static PyObject *getPEM(pycmsCMS *cms, void *unused);
 
 //signing time Object Identificator
 extern ASN1_OBJECT *OidSigningTime;
@@ -22,11 +24,13 @@ static void pycms_free(pycmsCMS *cms)
 static PyMethodDef pycms_methods[] = {
     { "load", (PyCFunction) _Load, METH_VARARGS | METH_STATIC , "load CMS from file in PEM format" },
     { "verify", (PyCFunction) _Verify, METH_VARARGS | METH_KEYWORDS , "verify CMS signedData"},
+    { "sign", (PyCFunction) _Sign, METH_VARARGS | METH_STATIC | METH_KEYWORDS , "sign  string and return CMS signedData"},
     { NULL }
 };
 
 static PyGetSetDef pycms_members[] = {
     { "content", (getter) getContent, 0, 0, 0 },
+    { "pem", (getter) getPEM, 0, 0, 0 },
     { "signedtime", (getter) getSignedTime, 0, 0, 0 },
     { "signers", (getter) getSigners, 0, 0, 0 },
     { NULL }
@@ -112,6 +116,24 @@ static PyObject *getContent(pycmsCMS *cms, void *unused){
     //return PyBytes_FromStringAndSize((*str)->data, (*str)->length);
 }
 
+//returns CMS pem representation as bytes object 
+static PyObject *getPEM(pycmsCMS *cms, void *unused){
+    int len;
+    const char *ptr;
+    PyObject* res = NULL;
+    BIO *out= BIO_new(BIO_s_mem());
+
+    if(! PEM_write_bio_CMS(out, cms->ptr)){
+        BIO_free( out );
+        return NULL;
+    }
+    len = BIO_get_mem_data(out, &ptr);
+    res = PyBytes_FromStringAndSize(ptr, len );
+    BIO_free( out );
+
+    return res;
+}
+
 //returns signing time list
 static PyObject *getSignedTime(pycmsCMS *cms, void *unused){
     struct tm t;
@@ -124,17 +146,14 @@ static PyObject *getSignedTime(pycmsCMS *cms, void *unused){
 		CMS_SignerInfo*  si= sk_CMS_SignerInfo_value(sistack, i);
         void* data = CMS_signed_get0_data_by_OBJ(si, OidSigningTime, -1, V_ASN1_UTCTIME);
 			
-		//ASN1_TIME_print(std, data);
         if(ASN1_UTCTIME_check(data)){
             ASN1_TIME_to_tm(data, &t);
-            PyList_SetItem(l, i, fromTimeStruct(&t)); 
-
+            PyList_SetItem(l, i, DateTime_from_tm(&t)); 
         }else{
             Py_IncRef(Py_None);
             PyList_SetItem(l, i, Py_None);
         }
     }
-    
     return l;
 }
 
@@ -174,7 +193,9 @@ static PyObject *_Verify(pycmsCMS *cms, PyObject *args,  PyObject *keywordArgs){
     char *content=NULL;
     Py_ssize_t contentLength;
 
-    time_t  tnotBefore, tnotAfter;
+    struct tm  tnotBefore={0};
+    struct tm  tnotAfter = {.tm_year=0xFF};
+
     caStoreObj = notBeforeObj = notAfterObj = NULL;
 
     if(cms==NULL || cms->ptr == NULL ){
@@ -185,21 +206,21 @@ static PyObject *_Verify(pycmsCMS *cms, PyObject *args,  PyObject *keywordArgs){
             keywordList, &caStoreObj, &notBeforeObj, &notAfterObj, &content, &contentLength))
         return NULL;
     
-    tnotBefore = (time_t)(0);
-    tnotAfter =  (time_t)( MAX_TIME_T );
+
 
     if( notBeforeObj!=NULL) {
         if( !isDateTime(notBeforeObj) )
             return raiseError(VerifyError, "notBefore parameter is not datetime");
-        tnotBefore = getDateTimeStamp( notBeforeObj );
-        //Py_DECREF(notBeforeObj);
+         
+        DateTime_to_tm(notBeforeObj, &tnotBefore );
+
     }
 
     if( notAfterObj!=NULL ){
         if( !isDateTime(notAfterObj) )
             return raiseError(VerifyError, "notAfter parameter is not datetime");
-        tnotAfter = getDateTimeStamp( notAfterObj );
-        //Py_DECREF( notAfterObj );
+        
+        DateTime_to_tm(notAfterObj, &tnotAfter);
     }
     
     //verify content if supplied
@@ -209,7 +230,7 @@ static PyObject *_Verify(pycmsCMS *cms, PyObject *args,  PyObject *keywordArgs){
 
     //verify signing time
     if(notAfterObj!=NULL || notBeforeObj!=NULL){
-        //verify signing time
+        
         const STACK_OF(CMS_SignerInfo)* sistack = CMS_get0_SignerInfos(cms->ptr);
 
         int n = sk_CMS_SignerInfo_num(sistack);
@@ -217,12 +238,31 @@ static PyObject *_Verify(pycmsCMS *cms, PyObject *args,  PyObject *keywordArgs){
             CMS_SignerInfo*  si= sk_CMS_SignerInfo_value(sistack, i);
             void* data = CMS_signed_get0_data_by_OBJ(si, OidSigningTime, -1, V_ASN1_UTCTIME);
                 
-            if(ASN1_UTCTIME_check(data)){
-                if( ASN1_UTCTIME_cmp_time_t(data, tnotAfter)==1 || 
-                    ASN1_UTCTIME_cmp_time_t(data, tnotBefore)==-1 ){
-                        //printf("signing time verify failed");
-                        goto end;
-                    }
+            if(data!=NULL && ASN1_UTCTIME_check(data)){
+                struct tm  ttm;
+                int day, sec;
+                if(ASN1_TIME_to_tm(data, &ttm)<0)
+                    goto end;
+
+
+                if (!OPENSSL_gmtime_diff(&day, &sec, &ttm, &tnotAfter)){
+                    goto end;
+                }
+
+                if(day<0 || sec<0){
+                    goto end;
+                }
+
+                if (!OPENSSL_gmtime_diff(&day, &sec, &ttm, &tnotBefore)){
+                    goto end;
+                }
+                if(day>0 || sec>0){
+                    goto end;
+                }
+
+            }else{
+                
+                goto end;
             }
         }
     }
@@ -236,7 +276,7 @@ static PyObject *_Verify(pycmsCMS *cms, PyObject *args,  PyObject *keywordArgs){
     }
     //do CMS verification 
     res = CMS_verify(cms->ptr, NULL, st, cont, NULL, CMS_BINARY );
-    //ERR_print_errors_fp(stderr);
+
 
 end:
     //release temp content BIO
@@ -250,3 +290,38 @@ end:
         Py_RETURN_FALSE;
 }
 
+
+static PyObject *_Sign(PyObject *_null, PyObject *args,  PyObject *keywordArgs){
+    static char *keywordList[] = { "pkey", "content", "signer", NULL };
+
+    PyObject *evpObj, *signerObj;
+    evpObj = signerObj = NULL;
+
+    char *content = NULL;
+    Py_ssize_t  contentLen;
+
+    if (!PyArg_ParseTupleAndKeywords(args, keywordArgs, "Os#O",
+            keywordList, &evpObj, &content, &contentLen, &signerObj))
+        return NULL;
+
+    if(content==NULL || contentLen==0){
+        return raiseError(VerifyError, "content should not be empty string");
+    }
+
+    if(Py_TYPE(signerObj) !=  &pycmsPyTypeX509 ){
+        return raiseError(VerifyError, "signer parameter is not X509 object");
+    }
+
+    if(Py_TYPE(evpObj) !=  &pycmsPyTypeEVP ){
+        return raiseError(VerifyError, "pkey parameter is not EVP object");
+    }
+
+    BIO* data = BIO_new_mem_buf(content, (int)contentLen);
+    
+    CMS_ContentInfo * handle = CMS_sign( ((pycmsX509 *)signerObj )->ptr , ((pycmsEVP *) evpObj)->ptr, NULL, data, CMS_BINARY );
+                          
+    BIO_free( data );
+
+    return (PyObject *)ossl_CMS_from_handle( handle );
+
+}

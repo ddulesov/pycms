@@ -19,6 +19,7 @@ typedef struct pycmsX509Name pycmsX509Name;
 typedef struct pycmsX509Store pycmsX509Store;
 typedef struct pycmsEngine pycmsEngine;
 typedef struct pycmsASN1 pycmsASN1;
+typedef struct pycmsEVP pycmsEVP;
 
 extern PyTypeObject pycmsPyTypeBuffer;
 extern PyTypeObject pycmsPyTypeError;
@@ -28,6 +29,7 @@ extern PyTypeObject pycmsPyTypeX509Name;
 extern PyTypeObject pycmsPyTypeX509Store;
 extern PyTypeObject pycmsPyTypeEngine;
 extern PyTypeObject pycmsPyTypeASN1;
+extern PyTypeObject pycmsPyTypeEVP;
 
 struct pycmsBuffer {
     const char *ptr;
@@ -67,6 +69,11 @@ struct pycmsEngine {
     ENGINE *ptr;
 };
 
+struct pycmsEVP {
+    PyObject_HEAD
+    EVP_PKEY *ptr;
+};
+
 struct pycmsASN1 {
     PyObject_HEAD
     const void* buff;
@@ -77,3 +84,4 @@ struct pycmsASN1 {
 pycmsEngine *ossl_init_engine(const char* engine_id);
 pycmsX509 *ossl_X509_from_handle(X509* handle);
 pycmsCMS *ossl_CMS_from_handle(CMS_ContentInfo* handle);
+pycmsEVP *ossl_EVP_from_handle(EVP_PKEY *handle);

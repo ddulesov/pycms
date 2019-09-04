@@ -1,4 +1,3 @@
-#include "common.h"
 #include "module.h"
 
 static void pycms_free(pycmsX509Store *x509s)
