@@ -1,6 +1,14 @@
-from distutils.core import setup, Extension
+# if setuptools is detected, use it to add support for eggs
+try:
+    from setuptools import setup, Extension
+except:
+    from distutils.core import setup
+    from distutils.extension import Extension
+
+
 from distutils.util import get_platform
 from distutils.ccompiler import get_default_compiler
+
 import sys
 import os
 
@@ -35,6 +43,8 @@ def genDirs():
                      yield k
 
 
+
+
 if sys.platform in ('linux', 'linux2'):
        libraries.append("crypto")
 else:
@@ -66,7 +76,7 @@ else:
               
        
        if OPENSSL_ROOT is None:
-              raise "OpenSSL dir not found. set OPENSSL environment variable to openssl.exe "
+              raise Exception("OpenSSL dir not found. set OPENSSL environment variable to openssl.exe ")
 
        
        include_dirs.append( os.path.join( OPENSSL_ROOT, "include"))
@@ -96,6 +106,6 @@ module_ex = Extension('_pycms',
 
                                        	
 setup (name = 'PyCMS',
-       version = '0.1.4',
+       version = '1.0',
        description = 'verify Cryptographic Message Syntax SignerInfo with GOST cryptography support',
        ext_modules = [module_ex])

@@ -34,13 +34,23 @@ PyObject *_init_openssl(PyObject *self, PyObject *args){
 }
 
 PyObject* raiseOsslError(void){
+    const char *ptr=NULL;
     //pycmsError *error;
     //error = pycmsError_newFromOpenSSL();
+    BIO *out= BIO_new(BIO_s_mem());
+
+    ERR_print_errors(out);
+    
+    /* old variant 
     unsigned long e = ERR_peek_last_error();
     if(e!=0){
         PyErr_SetString(OpenSSLError, ERR_reason_error_string(e));
     }
-
+    */
+    int len = BIO_get_mem_data(out, &ptr);
+    BIO_write(out,"\0",1);
+    PyErr_SetString(OpenSSLError, ptr );
+    BIO_free(out);
     //Py_DECREF(error);
     return NULL;
 }

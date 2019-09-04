@@ -5,3 +5,4 @@ test
 dist
 *.pyd
 pycms_run.py
+PyCMS.egg-info
