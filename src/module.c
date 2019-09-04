@@ -50,6 +50,7 @@ PyObject* raiseOsslError(void){
     int len = BIO_get_mem_data(out, &ptr);
     BIO_write(out,"\0",1);
     PyErr_SetString(OpenSSLError, ptr );
+    
     BIO_free(out);
     //Py_DECREF(error);
     return NULL;

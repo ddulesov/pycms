@@ -1,13 +1,16 @@
 import unittest
 import datetime
-from datetime import timedelta, timezone
+from datetime import timedelta
 
+'''
 try:
     from datetime import timezone
     utc = timezone.utc
 except:
     utc = None
+'''
 
+utc = None
 import _pycms
 
 DEF_CONTENT = b'test string\n'

@@ -37,10 +37,11 @@ int isDateTime(PyObject* obj){
 
 // convert struct tm to PY::datetime object
 PyObject* DateTime_from_tm(struct tm *t){
-    //PyDateTime_DateTime  *datetime = (PyDateTime_DateTime  *)PyDateTime_FromDateAndTime(t->tm_year+1900, t->tm_mon+1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec, 0);
+    PyDateTime_DateTime* res = (PyDateTime_DateTime  *)PyDateTime_FromDateAndTime(t->tm_year+1900, t->tm_mon+1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec, 0);
+    /*
     PyObject* res = PyDateTimeAPI->DateTime_FromDateAndTime( t->tm_year+1900, t->tm_mon+1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec, 0, 
         UTC_TimeZone,  PyDateTimeAPI->DateTimeType);
-
+    */
     return res;
 }
 
@@ -118,6 +119,7 @@ static struct PyModuleDef pycms_module = {
     0, 
     */
 };
+
 #define  INIT_FUNCTION_NAME PyInit__pycms( void )
 #else
 #define  INIT_FUNCTION_NAME	init_pycms( void )
