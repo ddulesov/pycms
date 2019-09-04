@@ -29,12 +29,17 @@ int isDateTime(PyObject* obj){
     return PyDateTime_CheckExact(obj);
 }
 
+#ifdef PyDateTime_TimeZone_UTC
+#define UTC_TimeZone  PyDateTime_TimeZone_UTC
+#else
+#define UTC_TimeZone  Py_None
+#endif
+
 // convert struct tm to PY::datetime object
 PyObject* DateTime_from_tm(struct tm *t){
-    
     //PyDateTime_DateTime  *datetime = (PyDateTime_DateTime  *)PyDateTime_FromDateAndTime(t->tm_year+1900, t->tm_mon+1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec, 0);
     PyObject* res = PyDateTimeAPI->DateTime_FromDateAndTime( t->tm_year+1900, t->tm_mon+1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec, 0, 
-        PyDateTime_TimeZone_UTC,  PyDateTimeAPI->DateTimeType);
+        UTC_TimeZone,  PyDateTimeAPI->DateTimeType);
 
     return res;
 }
